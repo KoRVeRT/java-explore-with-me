@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class StatsServiceImpl implements StatsService{
+public class StatsServiceImpl implements StatsService {
     private final StatsRepository statsRepository;
     private final StatsMapper statsMapper;
 
