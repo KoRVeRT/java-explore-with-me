@@ -12,14 +12,14 @@ public interface StatsRepository extends JpaRepository<Hit, Long> {
 
     @Query(value = "SELECT NEW ru.practicum.ewm.dto.stats.ViewDto(hit.app, hit.uri, COUNT(DISTINCT hit.ip)) " +
             "FROM Hit AS hit " +
-            "WHERE (hit.timestamp BETWEEN ?1 AND ?2) " +
+            "WHERE (hit.timestamp BETWEEN :start AND :end) " +
             "GROUP BY hit.app, hit.uri " +
             "ORDER BY COUNT(DISTINCT hit.ip) DESC")
     List<ViewDto> getStatsWithUniqUris(LocalDateTime start, LocalDateTime end);
 
     @Query(value = "SELECT NEW ru.practicum.ewm.dto.stats.ViewDto(hit.app, hit.uri, COUNT(hit.ip)) " +
             "FROM Hit AS hit " +
-            "WHERE (hit.timestamp BETWEEN ?1 AND ?2) " +
+            "WHERE (hit.timestamp BETWEEN :start AND :end) " +
             "GROUP BY hit.app, hit.uri " +
             "ORDER BY COUNT(hit.ip) DESC")
     List<ViewDto> getStats(LocalDateTime start, LocalDateTime end);

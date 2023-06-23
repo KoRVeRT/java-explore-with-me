@@ -29,9 +29,10 @@ public class StatsServiceImpl implements StatsService {
                 ? statsRepository.getStatsWithUniqUris(start, end)
                 : statsRepository.getStats(start, end);
 
-        return (uris == null || uris.isEmpty())
-                ? result
-                : result.stream()
+        if (uris == null || uris.isEmpty()) {
+            return result;
+        }
+        return result.stream()
                 .filter(viewDto -> uris.contains(viewDto.getUri()))
                 .collect(Collectors.toUnmodifiableList());
     }

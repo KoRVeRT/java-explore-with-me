@@ -2,7 +2,7 @@ version: '3.1'
 services:
   stats-server:
     build: stats-service/stats-server
-    image: explore-with-me:stats-server
+    image: ewm/stats-server
     container_name: stats-server-container
     ports:
       - "9090:9090"
@@ -23,7 +23,7 @@ services:
 
   ewm-service:
     build: main-service
-    image: explore-with-me:main-service
+    image: ewm/main-server
     container_name: main-service-container
     ports:
       - "8080:8080"

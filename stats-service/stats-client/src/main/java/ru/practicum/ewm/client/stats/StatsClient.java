@@ -7,9 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import ru.practicum.ewm.dto.stats.HitDto;
 import ru.practicum.ewm.dto.stats.ViewDto;
-import reactor.core.publisher.Flux;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -29,7 +27,7 @@ public class StatsClient {
         dateTimeFormat = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT);
     }
 
-    public Flux<ViewDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
+    public List<ViewDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
         return client.get()
                 .uri(uriBuilder -> uriBuilder.path(STATS_URI)
                         .queryParam("start", start.format(dateTimeFormat))
@@ -39,7 +37,8 @@ public class StatsClient {
                         .build())
                 .retrieve()
                 .bodyToFlux(ViewDto.class)
-                .timeout(Duration.ofSeconds(30));
+                .collectList()
+                .block();
     }
 
     public void postHit(HitDto hitDto) {
@@ -48,8 +47,7 @@ public class StatsClient {
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .bodyValue(hitDto)
                 .retrieve()
-                .bodyToMono(HitDto.class)
-                .timeout(Duration.ofSeconds(30))
-                .subscribe();
+                .bodyToMono(Void.class)
+                .block();
     }
 }
