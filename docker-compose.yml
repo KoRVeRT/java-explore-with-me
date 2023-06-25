@@ -36,5 +36,5 @@ services:
     container_name: ewm-db-container
     environment:
       - POSTGRES_DB=main-services
-      - POSTGRES_USER=ewm-postgres
+      - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=iamroot

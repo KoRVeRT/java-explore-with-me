@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 import ru.practicum.ewm.main.category.model.Category;
 
 @Component
-public class CategoryDtoMapper {
+public class CategoryMapper {
     public Category toCategory(CategoryDto categoryDto) {
         return Category.builder()
                 .name(categoryDto.getName())

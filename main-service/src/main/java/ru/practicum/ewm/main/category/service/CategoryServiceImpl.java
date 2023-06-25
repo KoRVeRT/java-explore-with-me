@@ -6,7 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.main.category.dto.CategoryDto;
-import ru.practicum.ewm.main.category.dto.CategoryDtoMapper;
+import ru.practicum.ewm.main.category.dto.CategoryMapper;
 import ru.practicum.ewm.main.category.model.Category;
 import ru.practicum.ewm.main.category.repository.CategoryRepository;
 
@@ -19,13 +19,13 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
-    private final CategoryDtoMapper categoryDtoMapper;
+    private final CategoryMapper categoryMapper;
 
     @Override
     @Transactional
     public CategoryDto addCategory(CategoryDto categoryDto) {
-        Category addedCategory = categoryRepository.save(categoryDtoMapper.toCategory(categoryDto));
-        return categoryDtoMapper.toCategoryDto(addedCategory);
+        Category addedCategory = categoryRepository.save(categoryMapper.toCategory(categoryDto));
+        return categoryMapper.toCategoryDto(addedCategory);
     }
 
     @Override
@@ -34,10 +34,11 @@ public class CategoryServiceImpl implements CategoryService {
         Category updatedCategory = findCategoryById(categoryDto.getId());
         updatedCategory.setName(categoryDto.getName());
         updatedCategory = categoryRepository.save(updatedCategory);
-        return categoryDtoMapper.toCategoryDto(updatedCategory);
+        return categoryMapper.toCategoryDto(updatedCategory);
     }
 
     @Override
+    @Transactional
     public void deleteCategory(Long id) {
         findCategoryById(id);
         categoryRepository.deleteById(id);
@@ -45,7 +46,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryDto getCategoryById(Long id) {
-        return categoryDtoMapper.toCategoryDto(findCategoryById(id));
+        return categoryMapper.toCategoryDto(findCategoryById(id));
     }
 
     @Override
@@ -53,12 +54,12 @@ public class CategoryServiceImpl implements CategoryService {
         Pageable pageable = PageRequest.of(from / size, size);
         return categoryRepository.findAll(pageable)
                 .stream()
-                .map(categoryDtoMapper::toCategoryDto)
+                .map(categoryMapper::toCategoryDto)
                 .collect(Collectors.toList());
     }
 
     private Category findCategoryById(Long id) {
         return categoryRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Category with id=%d was not found", id)));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("CategoryId=%d was not found", id)));
     }
 }
