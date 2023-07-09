@@ -17,11 +17,11 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Location {
-    Float lat;
-    Float lon;
+    Float latitude;
+    Float longitude;
 
     public Location(Event event) {
-        this.lat = event.getLat();
-        this.lon = event.getLon();
+        this.latitude = event.getLat();
+        this.longitude = event.getLon();
     }
 }

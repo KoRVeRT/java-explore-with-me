@@ -7,12 +7,8 @@ import ru.practicum.ewm.client.stats.StatsClient;
 
 @Configuration
 public class StatsClientConfig {
-
-    private final String serverUrl;
-
-    public StatsClientConfig(@Value("${stats-server.url}") String serverUrl) {
-        this.serverUrl = serverUrl;
-    }
+    @Value("${stats-server.url}")
+    private String serverUrl;
 
     @Bean
     public StatsClient createEndpointHitClient() {

@@ -19,7 +19,6 @@ import ru.practicum.ewm.main.user.model.User;
 import ru.practicum.ewm.main.user.repository.UserRepository;
 
 import javax.persistence.EntityNotFoundException;
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.ValidationException;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -103,26 +102,22 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<EventShortDto> searchEventsByUser(Integer from, Integer size, Set<Long> categoryIds, Boolean paid,
-                                                  LocalDateTime rangeStart, LocalDateTime rangeEnd, String text,
-                                                  EventSort sort, Boolean onlyAvailable, HttpServletRequest request) {
-        Pageable pageable = PageRequest.of(from / size, size);
+    public List<EventShortDto> searchEventsByUser(Pageable pageable,
+                                                  EventSearchCriteriaByUserWithRequestInfo criteriaWithRequestInfo) {
         Specification<Event> spec = Specification
-                .where(EventSpecifications.categoriesIn(categoryIds))
-                .and(EventSpecifications.isPaid(paid))
+                .where(EventSpecifications.categoriesIn(criteriaWithRequestInfo.getCategories()))
+                .and(EventSpecifications.isPaid(criteriaWithRequestInfo.getPaid()))
                 .and(EventSpecifications.statesIn(Set.of(EventState.PUBLISHED)))
-                .and(EventSpecifications.startsAfter(rangeStart))
-                .and(EventSpecifications.endsBefore(rangeEnd))
-                .and(EventSpecifications.textInDescriptionOrAnnotation(text));
-        HitDto hitDto = hitDtoMapper.toHiDto(request, APP_NAME);
+                .and(EventSpecifications.startsAfter(criteriaWithRequestInfo.getRangeStart()))
+                .and(EventSpecifications.endsBefore(criteriaWithRequestInfo.getRangeEnd()))
+                .and(EventSpecifications.textInDescriptionOrAnnotation(criteriaWithRequestInfo.getText()));
+        HitDto hitDto = hitDtoMapper.toHiDto(criteriaWithRequestInfo.getUri(), criteriaWithRequestInfo.getIp(), APP_NAME);
         eventStatisticService.postHit(hitDto);
         EventContainer data = getEventData(spec, pageable);
-
-        if (onlyAvailable == Boolean.TRUE) {
+        if (criteriaWithRequestInfo.getOnlyAvailable() == Boolean.TRUE) {
             data.setEvents(findAvailableEvents(data.getEvents(), data.getEventsIds()));
         }
-
-        if (sort == null) {
+        if (criteriaWithRequestInfo.getSort() == null) {
             return data.getEvents()
                     .stream()
                     .map(event -> eventMapper.toEventShortDto(event,
@@ -130,20 +125,18 @@ public class EventServiceImpl implements EventService {
                             data.getConfirmedRequests().getOrDefault(event.getId(), 0L)))
                     .collect(Collectors.toList());
         }
-        return getSortedEventsShortDto(data.getEvents(), data.getEventsViews(), data.getConfirmedRequests(), sort);
+        return getSortedEventsShortDto(data.getEvents(), data.getEventsViews(), data.getConfirmedRequests(),
+                criteriaWithRequestInfo.getSort());
     }
 
     @Override
-    public List<EventFullDto> searchEventsByAdmin(Integer from, Integer size, LocalDateTime rangeStart,
-                                                  LocalDateTime rangeEnd, Set<Long> userIds, Set<Long> categoryIds,
-                                                  Set<EventState> eventStates) {
-        Pageable pageable = PageRequest.of(from / size, size);
+    public List<EventFullDto> searchEventsByAdmin(Pageable pageable, EventSearchCriteriaByAdmin criteria) {
         Specification<Event> spec = Specification
-                .where(EventSpecifications.usersIn(userIds))
-                .and(EventSpecifications.statesIn(eventStates))
-                .and(EventSpecifications.categoriesIn(categoryIds))
-                .and(EventSpecifications.startsAfter(rangeStart))
-                .and(EventSpecifications.endsBefore(rangeEnd));
+                .where(EventSpecifications.usersIn(criteria.getUsers()))
+                .and(EventSpecifications.statesIn(criteria.getStates()))
+                .and(EventSpecifications.categoriesIn(criteria.getCategories()))
+                .and(EventSpecifications.startsAfter(criteria.getRangeStart()))
+                .and(EventSpecifications.endsBefore(criteria.getRangeEnd()));
         EventContainer data = getEventData(spec, pageable);
         return data.getEvents()
                 .stream()
@@ -155,14 +148,14 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public EventFullDto getEventById(Long eventId, HttpServletRequest request) {
+    public EventFullDto getEventById(Long eventId, String uri, String ip) {
         Event event = findEventById(eventId);
         if (!event.getEventState().equals(EventState.PUBLISHED)) {
             throw new EntityNotFoundException(String.format("EventId=%d was not found", eventId));
         }
         Long eventsViews = getViews(event);
         Long confirmedRequests = getConfirmedRequests(event.getId());
-        HitDto hitDto = hitDtoMapper.toHiDto(request, APP_NAME);
+        HitDto hitDto = hitDtoMapper.toHiDto(uri, ip, APP_NAME);
         eventStatisticService.postHit(hitDto);
         return eventMapper.toEventFullDto(event, eventsViews, confirmedRequests);
     }
@@ -171,7 +164,8 @@ public class EventServiceImpl implements EventService {
         List<Event> events = eventRepository.findAll(spec, pageable).getContent();
         Set<Long> eventsIds = getEventIds(events);
         Map<Long, Long> eventsViews = eventStatisticService.getEventsViews(events);
-        Map<Long, Long> confirmedRequests = requestRepository.getEventConfirmedRequestsCount(eventsIds, RequestStatus.CONFIRMED);
+        Map<Long, Long> confirmedRequests = requestRepository.getEventConfirmedRequestsCount(eventsIds,
+                RequestStatus.CONFIRMED);
 
         return new EventContainer(events, eventsIds, eventsViews, confirmedRequests);
     }
@@ -257,8 +251,8 @@ public class EventServiceImpl implements EventService {
 
     private void updateLocation(Event event, Location location) {
         if (location != null) {
-            event.setLat(location.getLat());
-            event.setLon(location.getLon());
+            event.setLat(location.getLatitude());
+            event.setLon(location.getLongitude());
         }
     }
 

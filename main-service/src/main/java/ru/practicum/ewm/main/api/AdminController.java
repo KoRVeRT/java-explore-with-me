@@ -2,6 +2,8 @@ package ru.practicum.ewm.main.api;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +18,7 @@ import ru.practicum.ewm.main.compilation.dto.UpdateCompilationRequest;
 import ru.practicum.ewm.main.compilation.service.CompilationService;
 import ru.practicum.ewm.main.event.dto.EventFullDto;
 import ru.practicum.ewm.main.event.dto.EventUpdateDto;
-import ru.practicum.ewm.main.event.model.EventState;
+import ru.practicum.ewm.main.event.model.EventSearchCriteriaByAdmin;
 import ru.practicum.ewm.main.event.service.EventService;
 import ru.practicum.ewm.main.user.dto.UserDto;
 import ru.practicum.ewm.main.user.service.UserService;
@@ -105,15 +107,12 @@ public class AdminController {
 
     @GetMapping("/events")
     @ResponseStatus(HttpStatus.OK)
-    public List<EventFullDto> searchEventsByAdmin(@RequestParam(required = false) Set<Long> users,
-                                                  @RequestParam(required = false) Set<EventState> states,
-                                                  @RequestParam(required = false) Set<Long> categories,
-                                                  @RequestParam(required = false) LocalDateTime rangeStart,
-                                                  @RequestParam(required = false) LocalDateTime rangeEnd,
-                                                  @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
-                                                  @RequestParam(defaultValue = "10") @Positive Integer size) {
-        List<EventFullDto> events = eventService.searchEventsByAdmin(from, size, rangeStart, rangeEnd, users, categories,
-                states);
+    public List<EventFullDto> searchEventsByAdmin(@RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                                  @RequestParam(defaultValue = "10") @Positive Integer size,
+                                                  @Valid @ModelAttribute EventSearchCriteriaByAdmin criteria
+    ) {
+        Pageable pageable = PageRequest.of(from, size);
+        List<EventFullDto> events = eventService.searchEventsByAdmin(pageable, criteria);
         log.info("Event list with size={} has been got", events.size());
         return events;
     }

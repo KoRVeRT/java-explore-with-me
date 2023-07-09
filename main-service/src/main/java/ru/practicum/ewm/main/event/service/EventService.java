@@ -1,16 +1,14 @@
 package ru.practicum.ewm.main.event.service;
 
+import org.springframework.data.domain.Pageable;
 import ru.practicum.ewm.main.event.dto.EventFullDto;
 import ru.practicum.ewm.main.event.dto.EventShortDto;
 import ru.practicum.ewm.main.event.dto.EventUpdateDto;
 import ru.practicum.ewm.main.event.dto.NewEventDto;
-import ru.practicum.ewm.main.event.model.EventSort;
-import ru.practicum.ewm.main.event.model.EventState;
+import ru.practicum.ewm.main.event.model.EventSearchCriteriaByAdmin;
+import ru.practicum.ewm.main.event.model.EventSearchCriteriaByUserWithRequestInfo;
 
-import javax.servlet.http.HttpServletRequest;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 
 public interface EventService {
     EventFullDto addEvent(NewEventDto newEventDto, Long userId);
@@ -21,15 +19,11 @@ public interface EventService {
 
     EventFullDto getUserEventById(Long userId, Long eventId);
 
-    List<EventFullDto> searchEventsByAdmin(Integer from, Integer size, LocalDateTime rangeStart,
-                                                  LocalDateTime rangeEnd, Set<Long> userIds, Set<Long> categoryIds,
-                                                  Set<EventState> eventStates);
+    List<EventFullDto> searchEventsByAdmin(Pageable pageable, EventSearchCriteriaByAdmin criteria);
 
     EventFullDto updateEventByAdmin(EventUpdateDto eventUpdateDto, Long eventId);
 
-    List<EventShortDto> searchEventsByUser(Integer from, Integer size, Set<Long> categoryIds, Boolean paid,
-                                           LocalDateTime rangeStart, LocalDateTime rangeEnd, String text,
-                                           EventSort sort, Boolean onlyAvailable, HttpServletRequest request);
+    List<EventShortDto> searchEventsByUser(Pageable pageable, EventSearchCriteriaByUserWithRequestInfo criteriaWithRequestInfo);
 
-    EventFullDto getEventById(Long eventId, HttpServletRequest request);
+    EventFullDto getEventById(Long eventId, String uri, String ip);
 }

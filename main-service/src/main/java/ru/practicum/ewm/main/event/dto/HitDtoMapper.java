@@ -3,16 +3,15 @@ package ru.practicum.ewm.main.event.dto;
 import org.springframework.stereotype.Component;
 import ru.practicum.ewm.dto.stats.HitDto;
 
-import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 
 @Component
 public class HitDtoMapper {
-    public HitDto toHiDto(HttpServletRequest request, String appName) {
+    public HitDto toHiDto(String uri, String ip, String appName) {
         return HitDto.builder()
                 .app(appName)
-                .uri(request.getRequestURI())
-                .ip(request.getRemoteAddr())
+                .uri(uri)
+                .ip(ip)
                 .timestamp(LocalDateTime.now())
                 .build();
     }

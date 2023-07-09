@@ -2,7 +2,6 @@ package ru.practicum.ewm.main.compilation.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -47,7 +46,7 @@ public class CompilationServiceImpl implements CompilationService {
         Compilation compilation = compilationMapper.toCompilation(newCompilationDto, eventsSet);
         Compilation savedCompilation = compilationRepository.save(compilation);
         List<EventShortDto> eventsShortDto = getShortEventsDto(newCompilationDto.getEvents());
-        return compilationMapper.toCompilationDto(savedCompilation, eventsShortDto);
+        return compilationMapper.toDto(savedCompilation, eventsShortDto);
     }
 
     @Override
@@ -61,7 +60,7 @@ public class CompilationServiceImpl implements CompilationService {
         Compilation compilationToUpdate = createCompilationUpdate(updateRequestDto, compilationId, eventList);
         Compilation updatedCompilation = compilationRepository.save(compilationToUpdate);
         List<EventShortDto> eventShortDto = getShortEventsDto(updateRequestDto.getEvents());
-        return compilationMapper.toCompilationDto(updatedCompilation, eventShortDto);
+        return compilationMapper.toDto(updatedCompilation, eventShortDto);
     }
 
     @Override
@@ -77,21 +76,21 @@ public class CompilationServiceImpl implements CompilationService {
         List<EventShortDto> eventShortDto = getShortEventsDto(compilation.getEvents().stream()
                 .map(Event::getId)
                 .collect(Collectors.toSet()));
-        return compilationMapper.toCompilationDto(compilation, eventShortDto);
+        return compilationMapper.toDto(compilation, eventShortDto);
     }
 
     @Override
-    public List<CompilationDto> getCompilationsByPinned(Boolean pinned, Integer from, Integer size) {
-        List<Compilation> compilationList = getCompilations(pinned, from, size);
+    public List<CompilationDto> getCompilationsByPinned(Boolean pinned, Pageable pageable) {
+        List<Compilation> compilationList = getCompilations(pinned, pageable);
         return compilationList.stream()
-                .map(compilation -> compilationMapper.toCompilationDto(compilation,
+                .map(compilation -> compilationMapper.toDto(compilation,
                         getShortEventsDto(compilation.getEvents().stream()
                                 .map(Event::getId).collect(Collectors.toSet()))))
                 .collect(Collectors.toList());
     }
 
-    private List<Compilation> getCompilations(Boolean pinned, Integer from, Integer size) {
-        Page<Compilation> page = compilationRepository.findAll(isPinned(pinned), PageRequest.of(from, size));
+    private List<Compilation> getCompilations(Boolean pinned, Pageable pageable) {
+        Page<Compilation> page = compilationRepository.findAll(isPinned(pinned), pageable);
         return page.getContent();
     }
 
