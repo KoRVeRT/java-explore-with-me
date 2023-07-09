@@ -9,9 +9,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.main.category.dto.CategoryDto;
 import ru.practicum.ewm.main.category.service.CategoryService;
-import ru.practicum.ewm.main.comment.dto.CommentDto;
-import ru.practicum.ewm.main.comment.model.CommentSortByAdmin;
-import ru.practicum.ewm.main.comment.service.CommentService;
 import ru.practicum.ewm.main.compilation.dto.CompilationDto;
 import ru.practicum.ewm.main.compilation.dto.NewCompilationDto;
 import ru.practicum.ewm.main.compilation.dto.UpdateCompilationRequest;
@@ -26,12 +23,10 @@ import ru.practicum.ewm.main.user.service.UserService;
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
 import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 @RestController
 @RequestMapping("/admin")
@@ -43,7 +38,6 @@ public class AdminController {
     private final UserService userService;
     private final EventService eventService;
     private final CompilationService compilationService;
-    private final CommentService commentService;
 
     @PostMapping("/categories")
     @ResponseStatus(HttpStatus.CREATED)
@@ -139,29 +133,5 @@ public class AdminController {
     public void deleteCompilations(@PathVariable Long compId) {
         log.info("compilation with id={} has been deleted", compId);
         compilationService.deleteCompilationById(compId);
-    }
-
-    @GetMapping("/comments")
-    @ResponseStatus(HttpStatus.OK)
-    public List<CommentDto> searchComments(@RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
-                                           @RequestParam(defaultValue = "10") @Positive Integer size,
-                                           @RequestParam(required = false) LocalDateTime rangeStart,
-                                           @RequestParam(required = false) LocalDateTime rangeEnd,
-                                           @RequestParam(required = false) Set<Long> userIds,
-                                           @RequestParam(required = false) Set<Long> eventIds,
-                                           @RequestParam(required = false) String text,
-                                           @RequestParam(required = false) CommentSortByAdmin sort) {
-
-        List<CommentDto> comments = commentService.getCommentsByAdmin(from, size, rangeStart, rangeEnd, userIds,
-                eventIds, text, sort);
-        log.info("Comments with size={} has been got by admin", comments.size());
-        return comments;
-    }
-
-    @DeleteMapping("/comments/{commentId}")
-    @ResponseStatus(NO_CONTENT)
-    public void delCommentByAdmin(@PathVariable Long commentId) {
-        log.info("Comment with id={} deleted by admin", commentId);
-        commentService.deleteCommentByAdmin(commentId);
     }
 }

@@ -50,10 +50,11 @@ public class Event {
     String description;
 
     @Column(name = "event_location_lat")
-    Float lat;
+    Float latitude;
+
 
     @Column(name = "event_location_lon")
-    Float lon;
+    Float longitude;
 
     @Column(name = "event_paid")
     Boolean paid = Boolean.FALSE;

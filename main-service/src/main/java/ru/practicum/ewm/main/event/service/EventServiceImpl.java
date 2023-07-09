@@ -251,8 +251,8 @@ public class EventServiceImpl implements EventService {
 
     private void updateLocation(Event event, Location location) {
         if (location != null) {
-            event.setLat(location.getLatitude());
-            event.setLon(location.getLongitude());
+            event.setLatitude(location.getLat());
+            event.setLongitude(location.getLon());
         }
     }
 
