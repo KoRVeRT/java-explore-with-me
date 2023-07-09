@@ -5,6 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.ewm.main.comment.dto.CommentDto;
+import ru.practicum.ewm.main.comment.model.CommentSort;
+import ru.practicum.ewm.main.comment.service.CommentService;
 import ru.practicum.ewm.main.event.dto.EventFullDto;
 import ru.practicum.ewm.main.event.dto.EventShortDto;
 import ru.practicum.ewm.main.event.dto.EventUpdateDto;
@@ -30,6 +33,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 public class UserController {
     private final EventService eventService;
     private final RequestService requestService;
+    private final CommentService commentService;
 
     @GetMapping("/{userId}/events")
     @ResponseStatus(HttpStatus.OK)
@@ -125,5 +129,76 @@ public class UserController {
                         "created={} } has been canceled", canceledParticipation.getId(), canceledParticipation.getEvent(),
                 canceledParticipation.getRequester(), canceledParticipation.getStatus(), canceledParticipation.getCreated());
         return canceledParticipation;
+    }
+
+    @PostMapping("/{userId}/comments")
+    @ResponseStatus(HttpStatus.CREATED)
+    public CommentDto addCommentToEvent(@PathVariable Long userId,
+                                        @RequestBody @Valid CommentDto commentDto) {
+        commentDto.setCommentatorId(userId);
+        CommentDto savedComment = commentService.addCommentByUser(commentDto);
+        log.info("Comment with fields { " +
+                        "id={}, " +
+                        "text={}, " +
+                        "eventId={}, " +
+                        "commentatorId={}," +
+                        "created={}" +
+                        "} has been saved", savedComment.getId(), savedComment.getText(), savedComment.getEventId(),
+                savedComment.getCommentatorId(), savedComment.getCreatedOn());
+        return savedComment;
+    }
+
+    @PatchMapping("/{userId}/comments/{commentId}")
+    @ResponseStatus(HttpStatus.OK)
+    public CommentDto updateComment(@PathVariable Long userId,
+                                    @PathVariable Long commentId,
+                                    @RequestBody @Valid CommentDto commentDto) {
+        commentDto.setCommentatorId(userId);
+        commentDto.setId(commentId);
+        CommentDto updatedComment = commentService.updateCommentByUser(commentDto);
+        log.info("Comment with fields { " +
+                        "id={}, " +
+                        "text={}, " +
+                        "eventId={}, " +
+                        "commentatorId={}," +
+                        "created={}" +
+                        "} has been updated", updatedComment.getId(), updatedComment.getText(), updatedComment.getEventId(),
+                updatedComment.getCommentatorId(), updatedComment.getCreatedOn());
+        return updatedComment;
+    }
+
+    @DeleteMapping("/{userId}/comments/{commentId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteComment(@PathVariable Long userId,
+                              @PathVariable Long commentId) {
+        commentService.deleteCommentByUser(userId, commentId);
+        log.info("User with id={} deleted comment with id={}", userId, commentId);
+    }
+
+    @GetMapping("/{userId}/comments")
+    @ResponseStatus(HttpStatus.OK)
+    public List<CommentDto> getUserComments(@PathVariable Long userId,
+                                            @RequestParam(defaultValue = "0") Integer from,
+                                            @RequestParam(defaultValue = "10") Integer size,
+                                            @RequestParam(required = false) CommentSort sort) {
+        List<CommentDto> comments = commentService.getUserComments(from, size, userId, sort);
+        log.info("Comments with size={} has been got", comments.size());
+        return comments;
+    }
+
+    @GetMapping("/{userId}/comments/{commentId}")
+    @ResponseStatus(HttpStatus.OK)
+    public CommentDto getUserCommentById(@PathVariable Long userId,
+                                         @PathVariable Long commentId) {
+        CommentDto comment = commentService.getUserCommentById(userId, commentId);
+        log.info("Comment with fields { " +
+                        "id={}, " +
+                        "text={}, " +
+                        "eventId={}, " +
+                        "commentatorId={}," +
+                        "created={}" +
+                        "} has been got", comment.getId(), comment.getText(), comment.getEventId(),
+                comment.getCommentatorId(), comment.getCreatedOn());
+        return comment;
     }
 }
