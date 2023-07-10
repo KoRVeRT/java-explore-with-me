@@ -8,6 +8,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.ewm.main.comment.dto.CommentDto;
+import ru.practicum.ewm.main.comment.model.CommentSort;
+import ru.practicum.ewm.main.comment.service.CommentService;
 import ru.practicum.ewm.main.event.dto.EventFullDto;
 import ru.practicum.ewm.main.event.dto.EventShortDto;
 import ru.practicum.ewm.main.event.model.EventSearchCriteriaByUser;
@@ -27,6 +30,7 @@ import java.util.List;
 @RequestMapping("/events")
 public class EventController {
     private final EventService eventService;
+    private final CommentService commentService;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -51,5 +55,33 @@ public class EventController {
                 httpServletRequest.getRemoteAddr());
         log.info("Event with id={} has been got", id);
         return event;
+    }
+
+    @GetMapping("/{id}/comments")
+    @ResponseStatus(HttpStatus.OK)
+    public List<CommentDto> getEventComments(@PathVariable Long id,
+                                             @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                             @RequestParam(defaultValue = "10") @Positive Integer size,
+                                             @RequestParam(required = false) CommentSort sort) {
+        Pageable pageable = PageRequest.of(from, size);
+        List<CommentDto> comments = commentService.getEventComments(pageable, id, sort);
+        log.info("Comments with size={} has been got", comments.size());
+        return comments;
+    }
+
+    @GetMapping("/{id}/comments/{commentId}")
+    @ResponseStatus(HttpStatus.OK)
+    public CommentDto getEventCommentById(@PathVariable Long id,
+                                          @PathVariable Long commentId) {
+        CommentDto comment = commentService.getEventCommentById(id, commentId);
+        log.info("Comment with fields { " +
+                        "id={}, " +
+                        "text={}, " +
+                        "eventId={}, " +
+                        "commentatorId={}," +
+                        "created={}" +
+                        "} has been got", comment.getId(), comment.getText(), comment.getEventId(),
+                comment.getCommentatorId(), comment.getCreatedOn());
+        return comment;
     }
 }

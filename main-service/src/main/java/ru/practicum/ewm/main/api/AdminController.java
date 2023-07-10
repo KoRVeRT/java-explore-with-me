@@ -9,6 +9,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.main.category.dto.CategoryDto;
 import ru.practicum.ewm.main.category.service.CategoryService;
+import ru.practicum.ewm.main.comment.dto.CommentDto;
+import ru.practicum.ewm.main.comment.model.CommentSearchCriteriaByAdmin;
+import ru.practicum.ewm.main.comment.service.CommentService;
 import ru.practicum.ewm.main.compilation.dto.CompilationDto;
 import ru.practicum.ewm.main.compilation.dto.NewCompilationDto;
 import ru.practicum.ewm.main.compilation.dto.UpdateCompilationRequest;
@@ -27,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 @RestController
 @RequestMapping("/admin")
@@ -38,6 +42,7 @@ public class AdminController {
     private final UserService userService;
     private final EventService eventService;
     private final CompilationService compilationService;
+    private final CommentService commentService;
 
     @PostMapping("/categories")
     @ResponseStatus(HttpStatus.CREATED)
@@ -58,7 +63,7 @@ public class AdminController {
     }
 
     @DeleteMapping("/categories/{catId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(NO_CONTENT)
     public void deleteCategory(@PathVariable Long catId) {
         categoryService.deleteCategory(catId);
         log.info("Category with id={} has been deleted", catId);
@@ -84,7 +89,7 @@ public class AdminController {
     }
 
     @DeleteMapping("/users/{userId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(NO_CONTENT)
     public void deleteUser(@PathVariable Long userId) {
         userService.deleteUser(userId);
         log.info("User with id={} has been deleted", userId);
@@ -129,9 +134,27 @@ public class AdminController {
     }
 
     @DeleteMapping("/compilations/{compId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(NO_CONTENT)
     public void deleteCompilations(@PathVariable Long compId) {
         log.info("compilation with id={} has been deleted", compId);
         compilationService.deleteCompilationById(compId);
+    }
+
+    @GetMapping("/comments")
+    @ResponseStatus(HttpStatus.OK)
+    public List<CommentDto> searchComments(@RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                           @RequestParam(defaultValue = "10") @Positive Integer size,
+                                           @ModelAttribute CommentSearchCriteriaByAdmin criteria) {
+        Pageable pageable = PageRequest.of(from, size);
+        List<CommentDto> comments = commentService.getCommentsByAdmin(pageable, criteria);
+        log.info("Comments with size={} has been got by admin", comments.size());
+        return comments;
+    }
+
+    @DeleteMapping("/comments/{commentId}")
+    @ResponseStatus(NO_CONTENT)
+    public void deleteCommentByAdmin(@PathVariable Long commentId) {
+        log.info("Comment with id={} deleted by admin", commentId);
+        commentService.deleteCommentByAdmin(commentId);
     }
 }
