@@ -79,10 +79,10 @@ public class UserController {
 
     @PatchMapping("/{userId}/events/{eventId}/requests")
     @ResponseStatus(HttpStatus.OK)
-    public EventRequestStatusUpdateResult updateRequestStatusByUser(@PathVariable Long userId,
-                                                                    @PathVariable Long eventId,
-                                                                    @RequestBody EventRequestStatusUpdateRequest
-                                                                            eventRequestStatusUpdateRequest) {
+    public EventRequestStatusUpdateResult updateRequestStatusByUser(
+            @PathVariable Long userId,
+            @PathVariable Long eventId,
+            @RequestBody EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest) {
         EventRequestStatusUpdateResult eventRequestStatusUpdateResult = requestService
                 .updateParticipationRequest(eventRequestStatusUpdateRequest, userId, eventId);
         log.info("Participation statuses has been updated");

@@ -6,7 +6,7 @@
     <parent>
         <groupId>ru.practicum</groupId>
         <artifactId>stats-service</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>1.0.0</version>
     </parent>
 
     <groupId>ru.practicum.ewm.client.stats</groupId>
@@ -27,7 +27,7 @@
         <dependency>
             <groupId>ru.practicum.ewm.dto.stats</groupId>
             <artifactId>stats-dto</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>1.0.0</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

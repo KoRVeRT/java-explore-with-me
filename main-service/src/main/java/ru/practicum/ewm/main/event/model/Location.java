@@ -1,5 +1,6 @@
 package ru.practicum.ewm.main.event.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,11 +18,14 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Location {
-    Float lat;
-    Float lon;
+    @JsonProperty("lat")
+    Float latitude;
+
+    @JsonProperty("lon")
+    Float longitude;
 
     public Location(Event event) {
-        this.lat = event.getLatitude();
-        this.lon = event.getLongitude();
+        this.latitude = event.getLatitude();
+        this.longitude = event.getLongitude();
     }
 }

@@ -30,8 +30,8 @@ public class EventMapper {
                         ? newEventDto.getRequestModeration() : Boolean.TRUE)
                 .participantLimit(newEventDto.getParticipantLimit() != null
                         ? newEventDto.getParticipantLimit() : 0)
-                .latitude(newEventDto.getLocation().getLat())
-                .longitude(newEventDto.getLocation().getLon())
+                .latitude(newEventDto.getLocation().getLatitude())
+                .longitude(newEventDto.getLocation().getLongitude())
                 .category(category)
                 .initiator(initiator)
                 .build();
