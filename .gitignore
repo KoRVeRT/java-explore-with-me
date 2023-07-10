@@ -30,4 +30,8 @@ build/
 !**/src/test/**/build/
 
 ### VS Code ###
+.gitignore
 .vscode/
+/stats-service/stats-server/.gitignore
+/stats-service/stats-dto/.gitignore
+/stats-service/stats-client/.gitignore

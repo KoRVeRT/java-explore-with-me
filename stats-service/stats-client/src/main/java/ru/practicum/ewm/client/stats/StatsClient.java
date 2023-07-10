@@ -1,9 +1,7 @@
 package ru.practicum.ewm.client.stats;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import ru.practicum.ewm.dto.stats.HitDto;
 import ru.practicum.ewm.dto.stats.ViewDto;
@@ -12,7 +10,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-@Service
+
 public class StatsClient {
     private static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
     private static final String STATS_URI = "/stats";
@@ -21,9 +19,8 @@ public class StatsClient {
     private final WebClient client;
     private final DateTimeFormatter dateTimeFormat;
 
-    @Autowired
-    public StatsClient(WebClient.Builder webClientBuilder, String url) {
-        this.client = webClientBuilder.baseUrl(url).build();
+    public StatsClient(String url) {
+        this.client = WebClient.create(url);
         dateTimeFormat = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT);
     }
 

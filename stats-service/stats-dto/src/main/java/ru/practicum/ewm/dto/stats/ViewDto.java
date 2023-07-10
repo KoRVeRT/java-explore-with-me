@@ -16,9 +16,9 @@ import lombok.experimental.FieldDefaults;
 @EqualsAndHashCode
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ViewDto {
-    private String app;
-    private String uri;
-    private Long hits;
+    String app;
+    String uri;
+    Long hits;
 
     public ViewDto(String app, String uri, Long hits) {
         this.app = app;
