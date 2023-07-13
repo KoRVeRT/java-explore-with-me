@@ -20,4 +20,4 @@
 Администраторы могут просматривать все комментарии и использовать различные критерии для поиска и фильтрации, 
 включая ID события, ID пользователя, текст комментария и дату создания.
 
-### Pull Request - [#3](https://github.com/KoRVeRT/java-explore-with-me)
+### Pull Request - [#5](https://github.com/KoRVeRT/java-explore-with-me/pull/5)
