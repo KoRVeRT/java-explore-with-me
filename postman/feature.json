@@ -191,7 +191,7 @@
 									"    \r",
 									"    const jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData).to.have.property('message');\r",
-									"    pm.expect(jsonData.message).to.contain(\"не должно быть пустым\");\r",
+									"    pm.expect(jsonData.message).to.contain(\"must not be blank\");\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -840,7 +840,7 @@
 									"    \r",
 									"    const jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData).to.have.property('message');\r",
-									"    pm.expect(jsonData.message).to.contain(\"не должно быть пустым\");\r",
+									"    pm.expect(jsonData.message).to.contain(\"must not be blank\");\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -3392,20 +3392,19 @@
 									"    const api = new API(pm);\r",
 									"    const rnd = new RandomUtils();\r",
 									"\r",
-									"  \r",
 									"    try {\r",
 									"        const user = await api.addUser(rnd.getUser());\r",
 									"        const category = await api.addCategory(rnd.getCategory());\r",
 									"        let event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
 									"        event = await api.publishEvent(event.id);\r",
 									"        let comment = await api.addComment(user.id, rnd.getComment(event.id));\r",
-									"        pm.collectionVariables.set('response', comment);\r",
-									"        pm.collectionVariables.set('eid', event.id);\r",
-									"        pm.collectionVariables.set(\"uid\", user.id)\r",
-									"        pm.collectionVariables.set(\"commentId\", comment.id)\r",
+									"        pm.environment.set('response', JSON.stringify(comment));\r",
+									"        pm.environment.set('eid', event.id);\r",
+									"        pm.environment.set(\"uid\", user.id);\r",
+									"        pm.environment.set(\"commentId\", comment.id);\r",
 									"        pm.request.removeQueryParams(['text', 'eventIds', 'userIds']);\r",
 									"        pm.request.addQueryParams([`text=` + comment.text, 'eventIds=' + event.id, 'userIds=' + user.id]);\r",
-									"      \r",
+									"\r",
 									"    } catch(err) {\r",
 									"        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
 									"    }\r",
@@ -3439,7 +3438,7 @@
 									"    pm.response.to.be.json;\r",
 									"});\r",
 									"\r",
-									"const source = pm.collectionVariables.get('response');\r",
+									"const source = JSON.parse(pm.environment.get('response'));\r",
 									"const target = pm.response.json()[0];\r",
 									"\r",
 									"pm.test(\"Комментарий должен содержать поля: id, text, event, commentator, createdOn\", function () {\r",
@@ -3453,8 +3452,8 @@
 									"pm.test(\"Данные в ответе должны соответствовать данным в запросе\", function () {\r",
 									"    pm.expect(source.id).equal(target.id);\r",
 									"    pm.expect(source.text).equal(target.text, 'Текст комментария должен соответствовать комментарию в запросе');\r",
-									"    pm.expect(source.event).equal(target.event);\r",
-									"    pm.expect(source.commentator).equal(target.commentator);\r",
+									"    pm.expect(source.eventId).equal(target.eventId);\r",
+									"    pm.expect(source.commentatorId).equal(target.commentatorId);\r",
 									"    pm.expect(source.createdOn).to.not.be.null;\r",
 									"});"
 								],
@@ -3744,7 +3743,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/admin/comments?from=0&size=100&rangeStart=2022-01-06%2013%3A30%3A38&rangeEnd=2097-09-06%2013%3A30%3A38&userIds=0&eventIds=0&text=0&sort=SORT_BY_TIME_ASC",
+							"raw": "{{baseUrl}}/admin/comments?from=0&size=10&rangeStart=2022-01-06%2013%3A30%3A38&rangeEnd=2097-09-06%2013%3A30%3A38&userIds=0&eventIds=0&text=0&sort=SORT_BY_TIME_ASC",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -3759,7 +3758,7 @@
 								},
 								{
 									"key": "size",
-									"value": "100"
+									"value": "10"
 								},
 								{
 									"key": "rangeStart",
@@ -3881,7 +3880,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/admin/comments?from=0&size=100&rangeStart=2022-01-06%2013%3A30%3A38&rangeEnd=2097-09-06%2013%3A30%3A38&userIds=0&eventIds=0&text=0&sort=SORT_BY_TIME_DESC",
+							"raw": "{{baseUrl}}/admin/comments?from=0&size=10&rangeStart=2022-01-06%2013%3A30%3A38&rangeEnd=2097-09-06%2013%3A30%3A38&userIds=0&eventIds=0&text=0&sort=SORT_BY_TIME_DESC",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -3896,7 +3895,7 @@
 								},
 								{
 									"key": "size",
-									"value": "100"
+									"value": "10"
 								},
 								{
 									"key": "rangeStart",
@@ -4018,7 +4017,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/admin/comments?from=0&size=100&rangeStart=2022-01-06%2013%3A30%3A38&rangeEnd=2097-09-06%2013%3A30%3A38&userIds=0&eventIds=0&text=0&sort=SORT_BY_USER",
+							"raw": "{{baseUrl}}/admin/comments?from=0&size=10&rangeStart=2022-01-06%2013%3A30%3A38&rangeEnd=2097-09-06%2013%3A30%3A38&userIds=0&eventIds=0&text=0&sort=SORT_BY_USER",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -4033,7 +4032,7 @@
 								},
 								{
 									"key": "size",
-									"value": "100"
+									"value": "10"
 								},
 								{
 									"key": "rangeStart",
@@ -4155,7 +4154,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/admin/comments?from=0&size=100&rangeStart=2022-01-06%2013%3A30%3A38&rangeEnd=2097-09-06%2013%3A30%3A38&userIds=0&eventIds=0&text=0&sort=SORT_BY_EVENTS",
+							"raw": "{{baseUrl}}/admin/comments?from=0&size=10&rangeStart=2022-01-06%2013%3A30%3A38&rangeEnd=2097-09-06%2013%3A30%3A38&userIds=0&eventIds=0&text=0&sort=SORT_BY_EVENTS",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -4170,7 +4169,7 @@
 								},
 								{
 									"key": "size",
-									"value": "100"
+									"value": "10"
 								},
 								{
 									"key": "rangeStart",
