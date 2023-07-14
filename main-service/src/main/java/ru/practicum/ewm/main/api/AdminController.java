@@ -4,11 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.main.category.dto.CategoryDto;
 import ru.practicum.ewm.main.category.service.CategoryService;
+import ru.practicum.ewm.main.comment.dto.CommentDto;
+import ru.practicum.ewm.main.comment.model.CommentSearchCriteriaByAdmin;
+import ru.practicum.ewm.main.comment.service.CommentService;
 import ru.practicum.ewm.main.compilation.dto.CompilationDto;
 import ru.practicum.ewm.main.compilation.dto.NewCompilationDto;
 import ru.practicum.ewm.main.compilation.dto.UpdateCompilationRequest;
@@ -26,7 +28,7 @@ import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 import java.util.Set;
 
-import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.*;
 
 @RestController
 @RequestMapping("/admin")
@@ -38,9 +40,10 @@ public class AdminController {
     private final UserService userService;
     private final EventService eventService;
     private final CompilationService compilationService;
+    private final CommentService commentService;
 
     @PostMapping("/categories")
-    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseStatus(CREATED)
     public CategoryDto addCategory(@Valid @RequestBody CategoryDto categoryDto) {
         CategoryDto savedCategory = categoryService.addCategory(categoryDto);
         log.info("Category {id={},name={}} has been got", savedCategory.getId(), savedCategory.getName());
@@ -48,7 +51,7 @@ public class AdminController {
     }
 
     @PatchMapping("/categories/{catId}")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(OK)
     public CategoryDto updateCategory(@PathVariable Long catId,
                                       @Valid @RequestBody CategoryDto categoryDto) {
         categoryDto.setId(catId);
@@ -58,14 +61,14 @@ public class AdminController {
     }
 
     @DeleteMapping("/categories/{catId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(NO_CONTENT)
     public void deleteCategory(@PathVariable Long catId) {
         categoryService.deleteCategory(catId);
         log.info("Category with id={} has been deleted", catId);
     }
 
     @GetMapping("/users")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(OK)
     public List<UserDto> getUsers(@RequestParam(required = false) Set<Long> ids,
                                   @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
                                   @RequestParam(defaultValue = "10") @Positive Integer size) {
@@ -75,7 +78,7 @@ public class AdminController {
     }
 
     @PostMapping("/users")
-    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseStatus(CREATED)
     public UserDto addUser(@Valid @RequestBody UserDto userDto) {
         UserDto addedUser = userService.addUser(userDto);
         log.info("User {id={},name={},email={}} has been added",
@@ -84,14 +87,14 @@ public class AdminController {
     }
 
     @DeleteMapping("/users/{userId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(NO_CONTENT)
     public void deleteUser(@PathVariable Long userId) {
         userService.deleteUser(userId);
         log.info("User with id={} has been deleted", userId);
     }
 
     @PatchMapping("/events/{eventId}")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(OK)
     public EventFullDto updateEventByAdmin(@PathVariable Long eventId,
                                            @RequestBody @Valid EventUpdateDto eventDto) {
         EventFullDto updatedEvent = eventService.updateEventByAdmin(eventDto, eventId);
@@ -100,7 +103,7 @@ public class AdminController {
     }
 
     @GetMapping("/events")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(OK)
     public List<EventFullDto> searchEventsByAdmin(@RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
                                                   @RequestParam(defaultValue = "10") @Positive Integer size,
                                                   @Valid @ModelAttribute EventSearchCriteriaByAdmin criteria
@@ -120,7 +123,7 @@ public class AdminController {
     }
 
     @PatchMapping("/compilations/{compId}")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(OK)
     public CompilationDto updateCompilations(@PathVariable Long compId,
                                              @RequestBody @Valid UpdateCompilationRequest updateCompilationRequest) {
         CompilationDto updatedCompilation = compilationService.updateCompilation(updateCompilationRequest, compId);
@@ -129,9 +132,27 @@ public class AdminController {
     }
 
     @DeleteMapping("/compilations/{compId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(NO_CONTENT)
     public void deleteCompilations(@PathVariable Long compId) {
         log.info("compilation with id={} has been deleted", compId);
         compilationService.deleteCompilationById(compId);
+    }
+
+    @GetMapping("/comments")
+    @ResponseStatus(OK)
+    public List<CommentDto> searchComments(@RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                           @RequestParam(defaultValue = "10") @Positive Integer size,
+                                           @ModelAttribute CommentSearchCriteriaByAdmin criteria) {
+        Pageable pageable = PageRequest.of(from, size);
+        List<CommentDto> comments = commentService.getCommentsByAdmin(pageable, criteria);
+        log.info("Comments with size={} has been got by admin", comments.size());
+        return comments;
+    }
+
+    @DeleteMapping("/comments/{commentId}")
+    @ResponseStatus(NO_CONTENT)
+    public void deleteCommentByAdmin(@PathVariable Long commentId) {
+        log.info("Comment with id={} deleted by admin", commentId);
+        commentService.deleteCommentByAdmin(commentId);
     }
 }

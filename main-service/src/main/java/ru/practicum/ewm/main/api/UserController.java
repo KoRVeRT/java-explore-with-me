@@ -2,9 +2,14 @@ package ru.practicum.ewm.main.api;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.ewm.main.comment.dto.CommentDto;
+import ru.practicum.ewm.main.comment.model.CommentSort;
+import ru.practicum.ewm.main.comment.service.CommentService;
 import ru.practicum.ewm.main.event.dto.EventFullDto;
 import ru.practicum.ewm.main.event.dto.EventShortDto;
 import ru.practicum.ewm.main.event.dto.EventUpdateDto;
@@ -21,6 +26,7 @@ import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.OK;
 
 @RestController
 @RequiredArgsConstructor
@@ -30,9 +36,10 @@ import static org.springframework.http.HttpStatus.CREATED;
 public class UserController {
     private final EventService eventService;
     private final RequestService requestService;
+    private final CommentService commentService;
 
     @GetMapping("/{userId}/events")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(OK)
     public List<EventShortDto> getEventsByUser(@PathVariable Long userId,
                                                @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
                                                @RequestParam(defaultValue = "10") @Positive Integer size) {
@@ -52,7 +59,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/events/{eventId}")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(OK)
     public EventFullDto getEventByUser(@PathVariable Long userId,
                                        @PathVariable Long eventId) {
         log.info("User event with userId={}, eventId={} has been got", userId, eventId);
@@ -60,7 +67,7 @@ public class UserController {
     }
 
     @PatchMapping("/{userId}/events/{eventId}")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(OK)
     public EventFullDto updateEventByUser(@PathVariable Long userId,
                                           @PathVariable Long eventId,
                                           @Valid @RequestBody EventUpdateDto eventUpdateDto) {
@@ -78,7 +85,7 @@ public class UserController {
     }
 
     @PatchMapping("/{userId}/events/{eventId}/requests")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(OK)
     public EventRequestStatusUpdateResult updateRequestStatusByUser(
             @PathVariable Long userId,
             @PathVariable Long eventId,
@@ -90,7 +97,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/requests")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(OK)
     public List<ParticipationRequestDto> getParticipationRequestsByUser(@PathVariable Long userId) {
         List<ParticipationRequestDto> participation = requestService.getRequestsByUser(userId);
         log.info("Participation list of size={} has been got", participation.size());
@@ -102,28 +109,67 @@ public class UserController {
     public ParticipationRequestDto addRequestByUser(@PathVariable Long userId,
                                                     @RequestParam Long eventId) {
         ParticipationRequestDto addedParticipation = requestService.addRequest(userId, eventId);
-        log.info("Participation with fields { " +
-                        "id={}, " +
-                        "eventId={}," +
-                        "requesterId={}," +
-                        "status={}," +
-                        "created={} } has been added", addedParticipation.getId(), addedParticipation.getEvent(),
-                addedParticipation.getRequester(), addedParticipation.getStatus(), addedParticipation.getCreated());
+        log.info("Participation has been added {}", addedParticipation);
         return addedParticipation;
     }
 
     @PatchMapping("/{userId}/requests/{requestId}/cancel")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(OK)
     public ParticipationRequestDto cancelRequestByUser(@PathVariable Long userId,
                                                        @PathVariable Long requestId) {
         ParticipationRequestDto canceledParticipation = requestService.cancelRequestById(userId, requestId);
-        log.info("Participation with fields { " +
-                        "id={}, " +
-                        "eventId={}," +
-                        "requesterId={}," +
-                        "status={}," +
-                        "created={} } has been canceled", canceledParticipation.getId(), canceledParticipation.getEvent(),
-                canceledParticipation.getRequester(), canceledParticipation.getStatus(), canceledParticipation.getCreated());
+        log.info("Participation has been canceled {}", canceledParticipation);
         return canceledParticipation;
+    }
+
+    @PostMapping("/{userId}/comments")
+    @ResponseStatus(CREATED)
+    public CommentDto addCommentEvent(@PathVariable Long userId,
+                                      @RequestBody @Valid CommentDto commentDto) {
+        commentDto.setCommentatorId(userId);
+        CommentDto savedComment = commentService.addCommentByUser(commentDto);
+        log.info("Comment has been added: {}", savedComment.toString());
+        return savedComment;
+    }
+
+    @PatchMapping("/{userId}/comments/{commentId}")
+    @ResponseStatus(OK)
+    public CommentDto updateComment(@PathVariable Long userId,
+                                    @PathVariable Long commentId,
+                                    @RequestBody @Valid CommentDto commentDto) {
+        commentDto.setCommentatorId(userId);
+        commentDto.setId(commentId);
+        CommentDto updatedComment = commentService.updateCommentByUser(commentDto);
+        log.info("Comment has been updated: {}", updatedComment.toString());
+        return updatedComment;
+    }
+
+    @DeleteMapping("/{userId}/comments/{commentId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteComment(@PathVariable Long userId,
+                              @PathVariable Long commentId) {
+        commentService.deleteCommentByUser(userId, commentId);
+        log.info("User with id={} deleted comment with id={}", userId, commentId);
+    }
+
+    @GetMapping("/{userId}/comments")
+    @ResponseStatus(OK)
+    public List<CommentDto> getUserComments(@PathVariable Long userId,
+                                            @RequestParam(defaultValue = "0") Integer from,
+                                            @RequestParam(defaultValue = "10") Integer size,
+                                            @RequestParam(required = false) CommentSort sort) {
+        Pageable pageable = PageRequest.of(from, size);
+        List<CommentDto> comments = commentService.getUserComments(pageable, userId, sort);
+        log.info("Comments with size={} has been got", comments.size());
+        return comments;
+    }
+
+    @GetMapping("/{userId}/comments/{commentId}")
+    @ResponseStatus(OK)
+    public CommentDto getUserCommentById(@PathVariable Long userId,
+                                         @PathVariable Long commentId) {
+        CommentDto comment = commentService.getUserCommentById(userId, commentId);
+        log.info("Comment has been got: {}", comment.toString());
+        return comment;
     }
 }
