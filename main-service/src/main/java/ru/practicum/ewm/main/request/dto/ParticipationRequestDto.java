@@ -1,13 +1,7 @@
 package ru.practicum.ewm.main.request.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.ewm.main.request.model.RequestStatus;
 
@@ -33,5 +27,17 @@ public class ParticipationRequestDto {
         this.event = event;
         this.count = count;
         this.status = status;
+    }
+
+    @Override
+    public String toString() {
+        return "ParticipationRequestDto {" +
+                "id=" + id +
+                ", event=" + event +
+                ", count=" + count +
+                ", requester=" + requester +
+                ", status=" + status +
+                ", created=" + created +
+                '}';
     }
 }

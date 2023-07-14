@@ -26,4 +26,15 @@ public class CommentDto {
 
     @NotNull
     Long eventId;
+
+    @Override
+    public String toString() {
+        return "CommentDto {" +
+                "id=" + id +
+                ", commentatorId=" + commentatorId +
+                ", createdOn=" + createdOn +
+                ", text=" + text +
+                ", eventId=" + eventId +
+                '}';
+    }
 }

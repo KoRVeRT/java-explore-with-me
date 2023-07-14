@@ -43,12 +43,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public List<CommentDto> getCommentsByAdmin(Pageable pageable, CommentSearchCriteriaByAdmin criteria) {
         Pageable sortedPageable = getSortedPageable(pageable, criteria.getSort());
-        Specification<Comment> spec = Specification
-                .where(CommentSpecification.hasEventIdIn(criteria.getEventIds()))
-                .and(CommentSpecification.hasUserIdIn(criteria.getUserIds()))
-                .and(CommentSpecification.hasTextLike(criteria.getText()))
-                .and(CommentSpecification.isCreatedAfter(criteria.getRangeStart()))
-                .and(CommentSpecification.isCreatedBefore(criteria.getRangeEnd()));
+        Specification<Comment> spec = criteria.toSpecification();
         return commentRepository.findAll(spec, sortedPageable).stream()
                 .map(commentMapper::toCommentDto)
                 .collect(Collectors.toList());
@@ -80,8 +75,8 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public CommentDto updateCommentByUser(CommentDto commentDto) {
-        findEventById(commentDto.getEventId());
-        findUserById(commentDto.getCommentatorId());
+        checkEventExists(commentDto.getEventId());
+        checkUserExists(commentDto.getCommentatorId());
         Comment comment = findCommentById(commentDto.getId());
         checkValidUserComment(commentDto.getCommentatorId(), comment);
         comment.setText(commentDto.getText());
@@ -92,7 +87,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public void deleteCommentByUser(Long userId, Long commentId) {
-        findUserById(userId);
+        checkUserExists(userId);
         Comment comment = findCommentById(commentId);
         checkValidUserComment(userId, comment);
         commentRepository.deleteById(commentId);
@@ -100,7 +95,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public List<CommentDto> getUserComments(Pageable pageable, Long userId, CommentSort sort) {
-        findUserById(userId);
+        checkUserExists(userId);
         Pageable sortedPageable = getSortedPageable(pageable, sort);
         Specification<Comment> spec = Specification.where(CommentSpecification.hasUserId(userId));
         return commentRepository.findAll(spec, sortedPageable).stream()
@@ -110,7 +105,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CommentDto getUserCommentById(Long userId, Long commentId) {
-        findUserById(userId);
+        checkUserExists(userId);
         Comment comment = findCommentById(commentId);
         if (!comment.getCommentator().getId().equals(userId)) {
             throw new EntityNotFoundException(String.format(MESSAGE_NOT_FOUND_COMMENT, commentId));
@@ -120,7 +115,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public List<CommentDto> getEventComments(Pageable pageable, Long eventId, CommentSort sort) {
-        findEventById(eventId);
+        checkEventExists(eventId);
         Pageable sortedPageable = getSortedPageable(pageable, sort);
         Specification<Comment> spec = Specification.where(CommentSpecification.hasEventId(eventId));
         return commentRepository.findAll(spec, sortedPageable).stream()
@@ -130,7 +125,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CommentDto getEventCommentById(Long eventId, Long commentId) {
-        findEventById(eventId);
+        checkEventExists(eventId);
         Comment comment = findCommentById(commentId);
         if (!comment.getEvent().getId().equals(eventId)) {
             throw new EntityNotFoundException(String.format(MESSAGE_NOT_FOUND_COMMENT, commentId));
@@ -170,9 +165,21 @@ public class CommentServiceImpl implements CommentService {
                 .orElseThrow(() -> new EntityNotFoundException(String.format("EventId=%d was not found", id)));
     }
 
+    private void checkEventExists(Long id) {
+        if (!eventRepository.existsById(id)) {
+            throw new EntityNotFoundException(String.format("EventId=%d was not found", id));
+        }
+    }
+
     private User findUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("UserId=%d was not found", id)));
+    }
+
+    private void checkUserExists(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new EntityNotFoundException(String.format("UserId=%d was not found", id));
+        }
     }
 
     private Comment findCommentById(Long id) {

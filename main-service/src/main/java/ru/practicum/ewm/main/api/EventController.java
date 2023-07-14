@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.main.comment.dto.CommentDto;
@@ -23,6 +22,8 @@ import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
+import static org.springframework.http.HttpStatus.OK;
+
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -33,7 +34,7 @@ public class EventController {
     private final CommentService commentService;
 
     @GetMapping
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(OK)
     public List<EventShortDto> getEventsByPublic(@ModelAttribute @Valid EventSearchCriteriaByUser criteria,
                                                  @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
                                                  @RequestParam(defaultValue = "10") @Positive Integer size,
@@ -49,7 +50,7 @@ public class EventController {
     }
 
     @GetMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(OK)
     public EventFullDto getEventById(@PathVariable Long id, HttpServletRequest httpServletRequest) {
         EventFullDto event = eventService.getEventById(id, httpServletRequest.getRequestURI(),
                 httpServletRequest.getRemoteAddr());
@@ -58,7 +59,7 @@ public class EventController {
     }
 
     @GetMapping("/{id}/comments")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(OK)
     public List<CommentDto> getEventComments(@PathVariable Long id,
                                              @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
                                              @RequestParam(defaultValue = "10") @Positive Integer size,
@@ -70,18 +71,11 @@ public class EventController {
     }
 
     @GetMapping("/{id}/comments/{commentId}")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(OK)
     public CommentDto getEventCommentById(@PathVariable Long id,
                                           @PathVariable Long commentId) {
         CommentDto comment = commentService.getEventCommentById(id, commentId);
-        log.info("Comment with fields { " +
-                        "id={}, " +
-                        "text={}, " +
-                        "eventId={}, " +
-                        "commentatorId={}," +
-                        "created={}" +
-                        "} has been got", comment.getId(), comment.getText(), comment.getEventId(),
-                comment.getCommentatorId(), comment.getCreatedOn());
+        log.info("Comment has been got: {}", comment.toString());
         return comment;
     }
 }

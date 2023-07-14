@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.main.compilation.dto.CompilationDto;
@@ -14,6 +13,8 @@ import ru.practicum.ewm.main.compilation.service.CompilationService;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
+
+import static org.springframework.http.HttpStatus.OK;
 
 @RestController
 @RequestMapping("/compilations")
@@ -25,7 +26,7 @@ public class CompilationController {
     private final CompilationService compService;
 
     @GetMapping
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(OK)
     public List<CompilationDto> getCompilations(@RequestParam(required = false) Boolean pinned,
                                                 @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
                                                 @RequestParam(defaultValue = "10") @Positive Integer size) {
@@ -36,7 +37,7 @@ public class CompilationController {
     }
 
     @GetMapping("/{compId}")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(OK)
     public CompilationDto getCompDtoById(@PathVariable Long compId) {
         CompilationDto compilation = compService.getCompilationById(compId);
         log.info("Compilation with id={} has been got", compId);
